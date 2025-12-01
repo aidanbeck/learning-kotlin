@@ -1,8 +1,6 @@
 package com.aidan.learning_kotlin
 
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
 
 @RestController
 @RequestMapping("/api/v1/articles") // why is this named api/v1/articles? is this a standard?
@@ -27,5 +25,47 @@ class ArticleController {
     fun articles2() = articles
     // articles return type & value is inferred
     // TODO read up on exactly how this works
+
+    @GetMapping("/{title}")
+    fun article(@PathVariable title: String): Article {
+        for (article in articles) {
+            if (article.title == title) {
+                return article
+            }
+        }
+        throw IllegalArgumentException("Cannot read. Article '$title' not found.")
+        // is this exception best practice!
+    }
+
+    @PostMapping
+    fun addArticle (@RequestBody article: Article) {
+        articles.add(article);
+    }
+
+    @PutMapping
+    fun updateArticle (@RequestBody article: Article): Article {
+
+        val title = article.title
+
+        for (i in 0..articles.size) {
+            if (articles[i].title == title) {
+                articles[i] = article
+                return articles[i]
+            }
+        }
+
+        throw IllegalArgumentException("Cannot update. Article '$title' not found.")
+    }
+
+    @DeleteMapping("/{title}")
+    fun deleteArticle(@PathVariable title: String) {
+        for (article in articles) {
+            if (article.title == title) {
+                articles.remove(article)
+            }
+        }
+        throw IllegalArgumentException("Cannot delete. Article '$title' not found.")
+    }
+
 
 }
