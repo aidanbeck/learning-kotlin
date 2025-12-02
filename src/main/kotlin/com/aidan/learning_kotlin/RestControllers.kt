@@ -6,20 +6,26 @@ import org.springframework.web.server.ResponseStatusException
 
 @RestController
 @RequestMapping("/api/v1/articles") // STUDY why is this named api/v1/articles? is this a standard?
-class ArticleController {
+class ArticleController (val repository: ArticleRepository) {
 
-    // articles dummy data, will replace with db access
-    val articles = mutableListOf( // modifiable list.
-        Article( // "New" keyword is no longer necessary. Just call ClassName()
-            "My Title",      // implicit parameter example
-            content = "My Content" // explicit parameter example
-            // values like createdAt do not *have* to be passed, because they have default values.
-        )
-    )
+    /*
+        // dummy data, replaced with db access
+        val articles = mutableListOf( Article( "My Title", content = "My Content") )
+
+        Notes:
+
+        parameters be defined implicitly by order or explicitly by "name = value"
+
+        values that are nullable or have defaults do not need to be passed
+
+        the "New" keyword is no longer necessary, just call the class.
+
+     */
 
     @GetMapping
-    fun articles() = articles
+    fun articles() = repository.findAllByOrderByCreatedAtDesc()
     /*
+        originally `fun articles() = articles`
         Notes:
 
         "articles" value is inferred as the return. STUDY how does this this work? Does it just return the value it equals?
@@ -35,8 +41,13 @@ class ArticleController {
 
     @GetMapping("/{slug}")
     fun articles(@PathVariable slug: String) =
-        articles.find { article -> article.slug == slug } ?: throw ResponseStatusException(HttpStatus.NOT_FOUND)
+        articles().find{ article -> article.slug == slug } ?: throw ResponseStatusException(HttpStatus.NOT_FOUND)
     /*
+        originally `articles.find { article -> article.slug == slug } ?: throw ResponseStatusException(HttpStatus.NOT_FOUND)`
+
+        The tutorial uses a "findBySlug" method on repository itself, but does not show it or link to it.
+        So I am calling it on the "articles" method, specifically the one defined with no parameters.
+
         Notes:
 
         "articles" method can be overloaded, since it takes a PathVariable String parameter.
@@ -63,10 +74,15 @@ class ArticleController {
 
     @PostMapping
     fun addArticle (@RequestBody article: Article):Article {
-        articles.add(Article(article.title, article.content))
+        repository.save(Article(null,article.title, article.content) )
         return article
     }
     /*
+        original:
+        articles.add(Article(article.title, article.content))
+        return article
+        STUDY why is id set to null? does saving a null id set it to the next available id?
+
         Notes:
 
         The return type must be defined in a more complicated function like this. STUDY When must it be defined, and when can it be inferred?
@@ -81,11 +97,19 @@ class ArticleController {
 
     @PutMapping("/{slug}")
     fun updateArticle (@RequestBody article: Article, @PathVariable slug: String): Article {
-        val existingArticle = articles.find { it.slug == slug } ?: throw ResponseStatusException(HttpStatus.NOT_FOUND)
+        val existingArticle = articles().find { it.slug == slug } ?: throw ResponseStatusException(HttpStatus.NOT_FOUND)
         existingArticle.content = article.content
+        repository.save(article)
         return article
     }
     /*
+        original:
+        val existingArticle = articles.find { it.slug == slug } ?: throw ResponseStatusException(HttpStatus.NOT_FOUND)
+        existingArticle.content = article.content
+        return article
+
+        STUDY does this mean updating articles need to have their correct id's?
+
         Notes:
 
         Put Requests should have a /{slug} identifier instead of just an object, so that the object can be sent to the right place.
@@ -99,9 +123,12 @@ class ArticleController {
 
     @DeleteMapping("/{slug}")
     fun deleteArticle(@PathVariable slug: String) {
-        articles.removeIf { article -> article.slug == slug }
+        val existingArticle = articles().find { article -> article.slug == slug } ?: throw ResponseStatusException(HttpStatus.NOT_FOUND)
+        repository.delete(existingArticle)
     }
     /*
+        original: articles.removeIf { article -> article.slug == slug }
+        TODO note that the exception was added!
         Notes:
 
         .removeIf() compares slugs for each element, and removes the element with a true result
