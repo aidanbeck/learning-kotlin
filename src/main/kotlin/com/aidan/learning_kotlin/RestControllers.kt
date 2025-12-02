@@ -33,9 +33,9 @@ class ArticleController {
         }
     */
 
-    @GetMapping("/{title}")
-    fun articles(@PathVariable title: String) =
-        articles.find { article -> article.title == title } ?: throw ResponseStatusException(HttpStatus.NOT_FOUND)
+    @GetMapping("/{slug}")
+    fun articles(@PathVariable slug: String) =
+        articles.find { article -> article.slug == slug } ?: throw ResponseStatusException(HttpStatus.NOT_FOUND)
     /*
         Notes:
 
@@ -74,16 +74,16 @@ class ArticleController {
         Remember to return the article in a post request
      */
 
-    @PutMapping("/{title}")
-    fun updateArticle (@RequestBody article: Article, @PathVariable title: String): Article {
-        val existingArticle = articles.find { it.title == title } ?: throw ResponseStatusException(HttpStatus.NOT_FOUND)
+    @PutMapping("/{slug}")
+    fun updateArticle (@RequestBody article: Article, @PathVariable slug: String): Article {
+        val existingArticle = articles.find { it.slug == slug } ?: throw ResponseStatusException(HttpStatus.NOT_FOUND)
         existingArticle.content = article.content
         return article
     }
     /*
         Notes:
 
-        Put Requests should have a /{title} identifier instead of just an object, so that the object can be sent to the right place.
+        Put Requests should have a /{slug} identifier instead of just an object, so that the object can be sent to the right place.
 
         uses "it" instead of "article" to avoid confusion with the input article. STUDY is using "it" standard practice?
         ANSWER "it" is a keyword for the single parameter in a lambda function. By using "it", we are targeting each element in the list.
@@ -92,16 +92,16 @@ class ArticleController {
         It also only returns the original article, which can be different than the updated article STUDY is this truly best practice?
      */
 
-    @DeleteMapping("/{title}")
-    fun deleteArticle(@PathVariable title: String) {
-        articles.removeIf { article -> article.title == title }
+    @DeleteMapping("/{slug}")
+    fun deleteArticle(@PathVariable slug: String) {
+        articles.removeIf { article -> article.slug == slug }
     }
     /*
         Notes:
 
-        .removeIf() compares titles for each element, and removes the element with a true result
+        .removeIf() compares slugs for each element, and removes the element with a true result
 
-        STUDY What does this return? Why doesn't this need an exception for if a title is not found?
+        STUDY What does this return? Why doesn't this need an exception for if a slug is not found?
         HALF-ANSWER: It sends back a 200 OK status regardless of deletion.
      */
 
