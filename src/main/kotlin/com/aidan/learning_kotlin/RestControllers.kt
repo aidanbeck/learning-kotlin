@@ -5,7 +5,7 @@ import org.springframework.web.bind.annotation.*
 import org.springframework.web.server.ResponseStatusException
 
 @RestController
-@RequestMapping("/api/v1/articles") // why is this named api/v1/articles? is this a standard?
+@RequestMapping("/api/v1/articles") // STUDY why is this named api/v1/articles? is this a standard?
 class ArticleController {
 
     // articles dummy data, will replace with db access
@@ -13,7 +13,7 @@ class ArticleController {
         Article( // "New" keyword is no longer necessary. Just call ClassName()
             "My Title",      // implicit parameter example
             content = "My Content" // explicit parameter example
-            // values like views & createdAt do not *have* to be passed, because they have default values.
+            // values like createdAt do not *have* to be passed, because they have default values.
         )
     )
 
@@ -62,8 +62,8 @@ class ArticleController {
      */
 
     @PostMapping
-    fun addArticle (@RequestBody article: Article): Article {
-        articles.add(article)
+    fun addArticle (@RequestBody article: Article):Article {
+        articles.add(Article(article.title, article.content))
         return article
     }
     /*
@@ -72,6 +72,11 @@ class ArticleController {
         The return type must be defined in a more complicated function like this. STUDY When must it be defined, and when can it be inferred?
 
         Remember to return the article in a post request
+
+        In order to allow post requests to submit without all fields (like createdAt or slug) I:
+        - made the non-required fields nullable.
+        - loaded the required fields into a constructor, so that the non-required fields will be set to their default calculated values.
+        The tutorial I am watching doesn't do these things, but it still works for them. STUDY Why is this the case?
      */
 
     @PutMapping("/{slug}")
