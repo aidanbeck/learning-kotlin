@@ -4,7 +4,7 @@ import java.time.LocalDateTime
 
 data class Article(
     val title: String, // constant
-    val content: String?, // nullable constant
+    var content: String?, // nullable variable
     val createdAt: LocalDateTime = LocalDateTime.now(), // default value
     var views: Int = 0, // variable
 
